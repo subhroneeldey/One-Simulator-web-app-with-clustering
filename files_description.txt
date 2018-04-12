@@ -1,0 +1,38 @@
+index.html 		- landing page of wkt_extractor
+geom.pyc 		- used ogr2osm.py
+josm-tested.jar - view osm file
+osm2wkt.jar 	- to convert osm file to wkt
+algo123			- for modeling; takes latency and db matrix as input and outputs no of dbs,adbs,wifi,cluster detail
+client1 		- client files
+ogr2osm-master 	- original ogr2osm downloaded folder
+ONE_GUI			- files of ONE_GUI
+
+
+final_map.jpg 	- stitched map jpg from last run
+map_part.jpg 	- used for individual part of unstitched map jpg
+
+map_script.js 	- js file of index.html which contains all scripting
+map.kml			- stitched kml file of full map
+map_db.kml		- kml containing db locations
+sample_kml.kml  - empty kml containing intial structure
+
+map_client.osm 	- osm of map_client.kml
+map_db.osm 		- osm of map_db.kml
+
+mergeimg.php 	- php file for stitching map jpg
+saveimg.php		- php file for saving the stitched map jpg
+
+server.php		- php to start server of wkt extractor
+server_close.php- php to close already running server
+
+simulate.php	- php to start one_gui simulation after extracting wkt
+write_matrix.php- writes the time matrix of db for algo123 input
+writedb.php		- writes the map_db.kml file
+
+addedge.py     	- adds edges in map from dbs to nearest road point and makes data.osm.wkt
+geom.py   		- file used by ogr2osm.py
+ogr2osm.py 		- used to conver kml to osm
+parseosm.py 	- parses osm file and reduces redundant nodes
+parsepdm.py 	- parses algo123 output and makes gui_input.txt required by ONE_GUI
+
+data.osm.wkt 	- final wkt map file to be used for simulation
