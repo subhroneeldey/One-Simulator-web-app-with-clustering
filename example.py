@@ -87,10 +87,9 @@ np.savetxt('medoid.txt',M,fmt="%s")
 np.savetxt('output.txt',outputar,fmt="%s",delimiter=',')    
 print('')
 print('clustering result:',M)
-'''
-np.savetxt('clusteringoutput.txt',C)
-'''
+#np.savetxt('clusteringoutput.txt',C)
+cluster=[None] * int(length/2)
 for label in C:
     for point_idx in C[label]:
-        print('label {0}:　{1}'.format(label, point_idx))
-        
+        cluster[point_idx]=label
+np.savetxt('clusteringoutput.txt',cluster,fmt="%s")       

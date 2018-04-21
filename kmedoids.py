@@ -61,5 +61,5 @@ def kMedoids(D, k, tmax=100):
             C[kappa] = np.where(J==kappa)[0]
 
     # return results
-    print(C)
+    
     return M, C

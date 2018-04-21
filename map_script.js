@@ -189,6 +189,7 @@ function distmatrix(i, j) {
 var dbmarkers = [];
 var dbcircles = [];
 var pixels = [];
+var towers=[];
 //Subhroneel Dey code- To change the dbs colour after clustering
 function changeDB(position) {
     
@@ -197,20 +198,68 @@ function changeDB(position) {
     {
         var pos=parseInt(position[i]);
         var markernew=dbmarkers[pos];
+        marker.setIcon("http://chart.apis.google.com/chart?chst=d_map_spin&chld=0.9|0|FFFF42|11|b|db" + (clusterindex[pos]));
+        towers.push(pos);
+    }
+    n=towers.length;    
+
+
+    // removing duplicate entries Subhroneel Dey
+    for(var i = 0; i < n; i++)
+    {
+        for(var j = i+1; j < n; )
+        {
+            if(towers[j] == towers[i])
+            {
+                for(var k = j; k < n; k++)
+                {
+                    towers[k] = towers[k+1];
+                }
+                n--;
+            }
+            else
+            {
+                j++;
+            }
+        }
+    }
+    
+
+    for(var i=0;i<n;i++)
+    {
+        var pos=parseInt(position[i]);
+        var markernew=dbmarkers[pos];
         var populationOptions = {
-        strokeColor: '#350000',
-        strokeOpacity: 0.8,
-        strokeWeight: 2,
-        fillColor: 'black',
-        fillOpacity: 0.5,
-        map: map,
-        center: markernew.getPosition(),
-        radius: 500
-        };
+            strokeColor: '#350000',
+            strokeOpacity: 0.8,
+            strokeWeight: 2,
+            fillColor: 'black',
+            fillOpacity: 0.5,
+            map: map,
+            center: markernew.getPosition(),
+            radius: 500
+            };
         // Add the circle for this city to the map.
         var circle = new google.maps.Circle(populationOptions);
+    }
+    
+
+}
+/** 
+
+function changemarker(position,clusterindex) {
+    
+    position=position.split("\n");
+    clusterindex=clusterindex.split("\n");
+    for(var i=0;i<position.length-1;i++)
+    {
+        var pos=parseInt(position[i]);
+        var markernew=dbmarkers[pos].getPosition();
+        marker.setIcon("http://chart.apis.google.com/chart?chst=d_map_spin&chld=0.9|0|FFFF42|11|b|db" + (clusterindex[pos]));
+        
     }    
 }
+*/
 //Subhroneel Dey Code
 function modifydb()
 {
@@ -225,7 +274,6 @@ function modifydb()
            if (extractWKT()) {
             drawingManager.setMap(null);
             setTask("EXTRACT");
-        }
         }
     };
     xhttp.open("GET", "readmeadoid.php", true);
