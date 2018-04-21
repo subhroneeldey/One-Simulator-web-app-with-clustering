@@ -202,10 +202,10 @@ function changeDB(position) {
         strokeOpacity: 0.8,
         strokeWeight: 2,
         fillColor: 'black',
-        fillOpacity: 0.9,
+        fillOpacity: 0.5,
         map: map,
         center: markernew.getPosition(),
-        radius: 100
+        radius: 500
         };
         // Add the circle for this city to the map.
         var circle = new google.maps.Circle(populationOptions);
