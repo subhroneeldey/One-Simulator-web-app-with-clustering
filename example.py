@@ -91,5 +91,6 @@ print('clustering result:',M)
 cluster=[None] * int(length/2)
 for label in C:
     for point_idx in C[label]:
-        cluster[point_idx]=label
+        cluster[point_idx]=M[label]
+print(cluster)
 np.savetxt('clusteringoutput.txt',cluster,fmt="%s")       

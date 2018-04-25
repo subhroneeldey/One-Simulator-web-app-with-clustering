@@ -26,9 +26,9 @@ var onekmlng = 0.01;
  * Author Subhroneel Dey
  * Clustering of points
  */
-function cluster(){
-    var numberoftowers=prompt("Enter number of resources for allocation available : ");
-    var dbarray=[];
+function cluster() {
+    var numberoftowers = prompt("Enter number of resources for allocation available : ");
+    var dbarray = [];
     console.log("Inside cluster");
     for (var i = 0, n = dbmarkers.length; i < n; i++) {
         var latlng = dbmarkers[i].getPosition();
@@ -36,8 +36,15 @@ function cluster(){
         dbarray.push(latlng.lat());
     }
     var xhttp = new XMLHttpRequest();
-    xhttp.async=false;
-    xhttp.open("GET", "clustercallsjava.php?pointarray=" + dbarray+"&numbercluster="+numberoftowers, true);
+    xhttp.async = false;
+    xhttp.onreadystatechange = function () {
+        if (this.readyState == 4 && this.status == 200) {
+            // Typical action to be performed when the document is ready:
+            modifydb();
+            
+        }
+    };
+    xhttp.open("GET", "clustercallsjava.php?pointarray=" + dbarray + "&numbercluster=" + numberoftowers, true);
     xhttp.send();
     console.log("Finished cluster");
 }
@@ -49,7 +56,7 @@ function nextMakeGrid(sw, ne) {
     recMakeGrid(new_sw, new_ne);
 }
 
-               var stichedges = [];
+var stichedges = [];
 
 var rec_topleft;
 var recInfoWindow
@@ -189,46 +196,51 @@ function distmatrix(i, j) {
 var dbmarkers = [];
 var dbcircles = [];
 var pixels = [];
-var towers=[];
+var towers = [];
 //Subhroneel Dey code- To change the dbs colour after clustering
-function changeDB(position) {
-    
-    position=position.split("\n");
-    for(var i=0;i<position.length-1;i++)
-    {
-        var pos=parseInt(position[i]);
-        var markernew=dbmarkers[pos];
-        marker.setIcon("http://chart.apis.google.com/chart?chst=d_map_spin&chld=0.9|0|FFFF42|11|b|db" + (clusterindex[pos]));
+let changeDB=function(position,callback) {
+
+    position = position.split("\n");
+    for (var i = 0; i < position.length - 1; i++) {
+        var pos = parseInt(position[i]);
+        var markernew = dbmarkers[i];
+        markernew.setIcon("http://chart.apis.google.com/chart?chst=d_map_spin&chld=0.9|0|FFFF42|11|b|T" + (position[pos]+i));
+        var populationOptions = {
+            strokeColor: '#350000',
+            strokeOpacity: 0.8,
+            strokeWeight: 2,
+            fillColor: 'red',
+            fillOpacity: 0.4,
+            map: map,
+            center: markernew.getPosition(),
+            radius: 50
+        };
+        // Add the circle for this city to the map.
+        var circle = new google.maps.Circle(populationOptions);
         towers.push(pos);
     }
-    n=towers.length;    
+    n = towers.length;
 
 
     // removing duplicate entries Subhroneel Dey
-    for(var i = 0; i < n; i++)
-    {
-        for(var j = i+1; j < n; )
-        {
-            if(towers[j] == towers[i])
-            {
-                for(var k = j; k < n; k++)
-                {
-                    towers[k] = towers[k+1];
+    for (var i = 0; i < n; i++) {
+        for (var j = i + 1; j < n;) {
+            if (towers[j] == towers[i]) {
+                for (var k = j; k < n; k++) {
+                    towers[k] = towers[k + 1];
                 }
                 n--;
             }
-            else
-            {
+            else {
                 j++;
             }
         }
     }
-    
 
-    for(var i=0;i<n;i++)
-    {
-        var pos=parseInt(position[i]);
-        var markernew=dbmarkers[pos];
+
+    for (var i = 0; i < n; i++) {
+        var pos = parseInt(towers[i]);
+        var markernew = dbmarkers[pos];
         var populationOptions = {
             strokeColor: '#350000',
             strokeOpacity: 0.8,
@@ -238,42 +250,32 @@ function changeDB(position) {
             map: map,
             center: markernew.getPosition(),
             radius: 500
-            };
+        };
         // Add the circle for this city to the map.
         var circle = new google.maps.Circle(populationOptions);
     }
+    callback();
     
 
 }
-/** 
-
-function changemarker(position,clusterindex) {
-    
-    position=position.split("\n");
-    clusterindex=clusterindex.split("\n");
-    for(var i=0;i<position.length-1;i++)
-    {
-        var pos=parseInt(position[i]);
-        var markernew=dbmarkers[pos].getPosition();
-        marker.setIcon("http://chart.apis.google.com/chart?chst=d_map_spin&chld=0.9|0|FFFF42|11|b|db" + (clusterindex[pos]));
-        
-    }    
-}
-*/
-//Subhroneel Dey Code
-function modifydb()
+function callextractWKT()
 {
+    if (extractWKT()) {
+        drawingManager.setMap(null);
+        setTask("EXTRACT");
+    }
+}
+//Subhroneel Dey Code
+function modifydb() {
     console.log("Inside modifydb");
     var xhttp = new XMLHttpRequest();
-    xhttp.async=false;
-    xhttp.onreadystatechange = function() {
+    xhttp.async = false;
+    xhttp.onreadystatechange = function () {
         if (this.readyState == 4 && this.status == 200) {
-           // Typical action to be performed when the document is ready:
-           var points = xhttp.responseText;
-           changeDB(points);
-           if (extractWKT()) {
-            drawingManager.setMap(null);
-            setTask("EXTRACT");
+            // Typical action to be performed when the document is ready:
+            var points = xhttp.responseText;
+            changeDB(points,callextractWKT);
+            
         }
     };
     xhttp.open("GET", "readmeadoid.php", true);
@@ -281,22 +283,20 @@ function modifydb()
     console.log(xhttp.responseText);
 }
 
+
 //Subhroneel Dey Code - To read modified db location from text file and call changeDB
-function readTextfile()
-{
-    var rawfile=new XMLHttpRequest();
-    rawfile.open("GET",file,false);
-    rawfile.onreadystatechange=function()
-    {
-        if(rawfile.readyState===4)
-        {
-            if(rawfile.status===200||rawfile.status==0)
-            var allText=rawfile.responseText;    
-        } 
+function readTextfile() {
+    var rawfile = new XMLHttpRequest();
+    rawfile.open("GET", file, false);
+    rawfile.onreadystatechange = function () {
+        if (rawfile.readyState === 4) {
+            if (rawfile.status === 200 || rawfile.status == 0)
+                var allText = rawfile.responseText;
+        }
     }
     rawfile.send(null);
-    var points=allText.split(" ");
-    
+    var points = allText.split(" ");
+
 }
 
 function addDB(marker) {
@@ -409,7 +409,7 @@ function startMapImageRequest(rectangle) {
         height = Math.floor(pixelCoordinatesw.y) - Math.floor(pixelCoordinatene.y);
     var offsetx = pixelCoordinatesw.x,
         offsety = pixelCoordinatene.y;
-
+ 
     recSaveImageReq(offsetx, offsety, 0, 0, width, height);
 }*/
 
@@ -426,9 +426,9 @@ function recSaveImageReq(offsetx, offsety, x, y, tw, th) {
         height = th - y > 640 ? 640 : Number(th - y);
 
     var pointne = {
-            x: offsetx + x + width,
-            y: offsety + y
-        },
+        x: offsetx + x + width,
+        y: offsety + y
+    },
         pointsw = {
             x: offsetx + x,
             y: offsety + y + height
@@ -532,43 +532,43 @@ function recRunSnapToRoad(lat, lng, side) {
             if (!jQuery.isEmptyObject(data))
                 processSnapToRoadResponse(data, lat, lng);
             switch (side) {
-            case "left":
-                lat += dinterval;
-                if (lat >= maxlat) {
-                    side = "top";
-                    lat = maxlat;
-                    lng = minlon;
-                }
-                break;
-            case "top":
-                lng += dinterval;
-                if (lng >= maxlon) {
-                    side = "right";
-                    lat = maxlat;
-                    lng = maxlon;
-                }
-                break;
-            case "right":
-                lat -= dinterval;
-                if (lat <= minlat) {
-                    side = "bottom";
-                    lat = minlat;
-                    lng = maxlon;
-                }
-                break;
-            case "bottom":
-                lng -= dinterval;
-                if (lng <= minlon) {
-                    side = "stop";
-                    removeClustering();
-                    console.log("BORDER SNAPPED: " + coordinate.length);
-                    //var r = confirm("Do you want to add directions?");
-                    //if (r == true) {
-                    addDirection();
-                    //floodFilling();
-                    //}
-                }
-                break;
+                case "left":
+                    lat += dinterval;
+                    if (lat >= maxlat) {
+                        side = "top";
+                        lat = maxlat;
+                        lng = minlon;
+                    }
+                    break;
+                case "top":
+                    lng += dinterval;
+                    if (lng >= maxlon) {
+                        side = "right";
+                        lat = maxlat;
+                        lng = maxlon;
+                    }
+                    break;
+                case "right":
+                    lat -= dinterval;
+                    if (lat <= minlat) {
+                        side = "bottom";
+                        lat = minlat;
+                        lng = maxlon;
+                    }
+                    break;
+                case "bottom":
+                    lng -= dinterval;
+                    if (lng <= minlon) {
+                        side = "stop";
+                        removeClustering();
+                        console.log("BORDER SNAPPED: " + coordinate.length);
+                        //var r = confirm("Do you want to add directions?");
+                        //if (r == true) {
+                        addDirection();
+                        //floodFilling();
+                        //}
+                    }
+                    break;
             }
 
             if (side != "stop")
@@ -697,10 +697,10 @@ function addDirection() {
 
     /*for(var x=0;x<coordinate.length;x++)
             {
-	           for(var y=x+1;y<coordinate.length;y++)
-	           {
-		          reqDirection(coordinate[x],coordinate[y]);
-	           }
+               for(var y=x+1;y<coordinate.length;y++)
+               {
+                  reqDirection(coordinate[x],coordinate[y]);
+               }
            }*/
 }
 
@@ -1294,7 +1294,7 @@ function reqEdgesDirection(edgeindex) {
 
         /*if (curr_ne.lng() >= original_ne.lng())
             return;
-
+ 
         var new_sw = new google.maps.LatLng(curr_sw.lat(), curr_sw.lng() + onekmlng);
         nextMakeGrid(new_sw, curr_ne);*/
 
@@ -1476,7 +1476,7 @@ function addEdgeToFile(open, kmlpoints, index, response, edgeindex, kmlindex) {
     }
     xmlhttp.open("POST", "write.php", true);
     xmlhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-
+ 
     var params;
     if (open) {
         params = "value=open";
@@ -1527,7 +1527,7 @@ function bfs(root) {
                 lq.push(regions[i + 1][j + 1]);
                 regions[i + 1][j + 1].traversed = true;
                 edges.push(new edge(tempreg.marker.getPosition(), regions[i + 1][j + 1].marker.getPosition()))
-                    //addEdge(tempreg,regions[i+1][j+1]);
+                //addEdge(tempreg,regions[i+1][j+1]);
             }
         }
     }
